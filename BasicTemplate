@@ -1,0 +1,62 @@
+Shader "Unlit/BlueFat" {
+    Properties {
+    _MainTex ("BaseCol",2D) = "white"{}
+
+
+    }
+    SubShader {    
+        Tags {
+            "Queue"="Transparent"
+            "RenderType"="Transparent"
+            "ForceNoShadowCasting"  =   "True"
+            "IgnoreProjector"   =   "True"
+
+        }
+        Pass {
+            Name "FORWARD"
+            Tags{
+                 "LightMode"="ForwardBase"
+            }
+            Blend   SrcAlpha OneMinusSrcAlpha
+
+            CGPROGRAM
+            #pragma vertex vert
+            #pragma fragment frag
+            #include "UnityCG.cginc"
+            #pragma multi_compile_fwbase_fullshadows
+            #pragma target 3.0
+
+			uniform sampler2D _MainTex ;
+            uniform fixed4  _MainTex_ST;
+
+			struct VertexInput {
+                half4 vertex        :       POSITION;   // 将模型顶点信息输入进来
+                half2 uv0            :     TEXCOORD0;
+                half3 normal    :   TEXCOORD1;
+                half4 tangent   :   TANGENT;
+            };
+
+            // 输出结构
+            struct VertexOutput {
+                float4 pos : SV_POSITION;   // 由模型顶点信息换算而来的顶点屏幕位置
+                float2 uv0 : TEXCOORD0;
+            };
+
+            // 输入结构>>>顶点Shader>>>输出结构
+            VertexOutput vert (VertexInput v) {
+                VertexOutput o = (VertexOutput)0;               // 新建一个输出结构
+                o.pos = UnityObjectToClipPos( v.vertex );
+                o.uv0 =  TRANSFORM_TEX(v.uv0,_MainTex);
+                return o ;
+            }
+
+            // 输出结构>>>像素
+            half4 frag(VertexOutput i) : COLOR {
+                half4    var_Maintex =   tex2D(_MainTex , i.uv0);
+                return var_Maintex ;
+            }
+            ENDCG
+        }
+    }
+
+}
